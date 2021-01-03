@@ -18,7 +18,7 @@ module.exports = {
         if (err) {
           next(err);
         }
-        res.json({ success: true, message: "User Added", data: result });
+        res.json({message: "User Added", data: result });
       }
     );
   },
@@ -26,7 +26,7 @@ module.exports = {
   create: async (req, res, next) => {
     const user = await userModel.findOne({ username: req.body.username });
     if (user !== null) {
-      res.json({ success: false, message: "Username Taken", data: null });
+      res.status(409).send({message: "Username Taken", data: null });
       return;
     }
     userModel.create(
@@ -38,7 +38,7 @@ module.exports = {
         if (err) {
           next(err);
         }
-        res.json({ success: true, message: "User Added", data: result });
+        res.json({message: "User Added", data: result });
       }
     );
   },
@@ -68,7 +68,6 @@ module.exports = {
           );
 
           res.send({
-            success: true,
             message: "Authenticated!",
             data: {
               user: user,
@@ -85,10 +84,6 @@ module.exports = {
   },
 
   changePass: (req, res, next) => {
-    if (!req.body.prevPass || !req.body.newPass) {
-      res.json({ success: false, message: "Invalid parameter", data: null });
-      return;
-    }
     userModel.findById(req.body.userId, (err, user) => {
       if (err) {
         next(err);
@@ -96,22 +91,34 @@ module.exports = {
       if (user == null) {
         res
           .status(500)
-          .send({ success: false, message: "Invalid Token", data: null });
+          .send({message: "Invalid Token", data: null });
         return;
       }
       if (bcrypt.compareSync(req.body.prevPass, user.password)) {
         user.password = req.body.newPass;
         user.save();
-        res.send({ success: true, message: "Success change password" });
+        res.send({message: "Success change password", data:user});
       } else {
-        res
-          .status(400)
-          .send({
-            success: false,
-            message: "Invalid current password",
-            data: null,
-          });
+        res.status(400).send({
+          message: "Invalid current password",
+          data: null,
+        });
       }
     });
+  },
+
+  getUsers: async (req, res, next) => {
+    const users = await userModel.find({});
+    res.send(users);
+  },
+
+  removeUser: async (req, res, next) => {
+    userModel.findByIdAndRemove(req.params.id,(err,user)=>{
+      if(err){
+        res.status(500).send(err);
+        return;
+      }
+      res.status(200).send({message:"User Deleted", data: user});
+    })
   },
 };
