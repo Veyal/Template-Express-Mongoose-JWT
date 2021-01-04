@@ -40,6 +40,9 @@ db.createUser({
     roles: ["dbOwner"]
 })
 ```
+#### Edit Mongo config
+* Open Mongo config on ```/etc/mongod.conf```
+* [Enable authentication](https://stackoverflow.com/questions/25325142/how-to-set-authorization-in-mongodb-config-file) by adding ```auth = true```(<v2.4)
 
 #### Lastly
 * Install all required library using ```npm install```
